@@ -21,7 +21,7 @@ const mono = IBM_Plex_Mono({
 });
 
 const allEvents = getEvents();
-const paginatedEvents = getPaginatedEvents(1, 5);
+const paginatedEvents = getPaginatedEvents(1, 10);
 const featuredEvents = getFeaturedEvents();
 const eventById = getEventById(3);
 const createdEvent = createEvent({
@@ -85,7 +85,7 @@ export default function EventsPage() {
 
       <section className="mx-auto mt-12 max-w-2xl space-y-10">
         <div>
-          <h2 className="text-xl">Paginated events (page 1, size 5)</h2>
+          <h2 className="text-xl">Paginated events (page 1, size 10)</h2>
           <ul className="mt-4 space-y-2 text-sm text-neutral-700">
             {paginatedEvents.map((event) => (
               <li key={`page-${event.id}`}>
