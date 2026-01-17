@@ -1,5 +1,14 @@
 import Link from "next/link";
 import { Libre_Baskerville, IBM_Plex_Mono } from "next/font/google";
+import {
+  createEvent,
+  deleteEvent,
+  getEventById,
+  getEvents,
+  getFeaturedEvents,
+  getPaginatedEvents,
+  updateEvent,
+} from "@/lib/data";
 
 const serif = Libre_Baskerville({
   subsets: ["latin"],
@@ -11,26 +20,21 @@ const mono = IBM_Plex_Mono({
   weight: ["400", "500"],
 });
 
-const events = [
-  {
-    slug: "midnight-jazz-session",
-    title: "Midnight Jazz Session",
-    date: "Oct 21, 2026",
-    location: "Blue Room Theatre, NY",
-  },
-  {
-    slug: "modern-strings-ensemble",
-    title: "Modern Strings Ensemble",
-    date: "Nov 02, 2026",
-    location: "Orpheum Hall, SF",
-  },
-  {
-    slug: "analog-synth-nights",
-    title: "Analog Synth Nights",
-    date: "Nov 18, 2026",
-    location: "Warehouse 4, LA",
-  },
-];
+const allEvents = getEvents();
+const paginatedEvents = getPaginatedEvents(1, 5);
+const featuredEvents = getFeaturedEvents();
+const eventById = getEventById(3);
+const createdEvent = createEvent({
+  title: "Community Hack Night",
+  date: "2026-12-10",
+  location: "Austin",
+  capacity: 120,
+});
+const updatedEvent = updateEvent(createdEvent.id, {
+  capacity: 180,
+  location: "Austin, TX",
+});
+const wasDeleted = deleteEvent(createdEvent.id);
 
 export default function EventsPage() {
   return (
@@ -47,10 +51,10 @@ export default function EventsPage() {
       </header>
 
       <section className="mx-auto max-w-2xl border-t border-neutral-300">
-        {events.map((event) => (
+        {allEvents.map((event) => (
           <Link
-            key={event.slug}
-            href={`/events/${event.slug}`}
+            key={event.id}
+            href={`/events/${event.id}`}
             className="
               grid grid-cols-[120px_1fr_auto]
               gap-6 border-b border-neutral-300
@@ -77,6 +81,52 @@ export default function EventsPage() {
             </span>
           </Link>
         ))}
+      </section>
+
+      <section className="mx-auto mt-12 max-w-2xl space-y-10">
+        <div>
+          <h2 className="text-xl">Paginated events (page 1, size 5)</h2>
+          <ul className="mt-4 space-y-2 text-sm text-neutral-700">
+            {paginatedEvents.map((event) => (
+              <li key={`page-${event.id}`}>
+                {event.title} — {event.location} ({event.date})
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h2 className="text-xl">Featured events (even IDs)</h2>
+          <ul className="mt-4 space-y-2 text-sm text-neutral-700">
+            {featuredEvents.map((event) => (
+              <li key={`featured-${event.id}`}>
+                {event.title} — {event.location} ({event.date})
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h2 className="text-xl">Event by ID (3)</h2>
+          <p className="mt-4 text-sm text-neutral-700">
+            {eventById
+              ? `${eventById.title} in ${eventById.location} on ${eventById.date}`
+              : "Event not found."}
+          </p>
+        </div>
+
+        <div>
+          <h2 className="text-xl">Create / Update / Delete sample</h2>
+          <div className="mt-4 space-y-2 text-sm text-neutral-700">
+            <p>
+              Created: {createdEvent.title} (capacity {createdEvent.capacity})
+            </p>
+            <p>
+              Updated: {updatedEvent?.title} (capacity {updatedEvent?.capacity})
+            </p>
+            <p>Deleted: {wasDeleted ? "yes" : "no"}</p>
+          </div>
+        </div>
       </section>
     </main>
   );
