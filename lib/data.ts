@@ -1,4 +1,4 @@
-type EventType = {
+export type EventType = {
   title: string;
   date: string;
   location: string;
@@ -46,11 +46,14 @@ const events: EventType[] = [
 ];
 
 export function getEvents(): EventType[] {
-  return events;
+  return [...events];
 }
 
 export function getPaginatedEvents(page: number, pageSize: number): EventType[] {
-  const startIndex = (page - 1) * pageSize;
+  if (!Number.isFinite(page) || !Number.isFinite(pageSize) || pageSize <= 0) {
+    return [];
+  }
+  const startIndex = Math.max((page - 1) * pageSize, 0);
   return events.slice(startIndex, startIndex + pageSize);
 }
 
@@ -63,28 +66,34 @@ export function getFeaturedEvents(): EventType[] {
 }
 
 export function createEvent(event: Omit<EventType, 'id'>): EventType {
-    const newEvent: EventType = {
-        id: events.length + 1,
-        ...event
-    };
-    events.push(newEvent);
-    return newEvent;
+  const normalizedEvent = {
+    title: event.title?.trim() ?? "",
+    date: event.date ?? "",
+    location: event.location?.trim() ?? "",
+    capacity: Number.isFinite(event.capacity) ? event.capacity : 0,
+  };
+  const newEvent: EventType = {
+    id: events.length + 1,
+    ...normalizedEvent,
+  };
+  events.push(newEvent);
+  return newEvent;
 }
 
 export function updateEvent(id: number, updatedEvent: Partial<Omit<EventType, 'id'>>): EventType | undefined {
-    const eventIndex = events.findIndex((event) => event.id === id);
-    if (eventIndex === -1) {
-        return undefined;
-    }
-    events[eventIndex] = { ...events[eventIndex], ...updatedEvent };
-    return events[eventIndex];
+  const eventIndex = events.findIndex((event) => event.id === id);
+  if (eventIndex === -1) {
+    return undefined;
+  }
+  events[eventIndex] = { ...events[eventIndex], ...updatedEvent };
+  return events[eventIndex];
 }
 
 export function deleteEvent(id: number): boolean {
-    const eventIndex = events.findIndex((event) => event.id === id);
-    if (eventIndex === -1) {
-        return false;
-    }
-    events.splice(eventIndex, 1);
-    return true;
+  const eventIndex = events.findIndex((event) => event.id === id);
+  if (eventIndex === -1) {
+    return false;
+  }
+  events.splice(eventIndex, 1);
+  return true;
 }
