@@ -38,7 +38,7 @@ export default function AdminCreateEventPage() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     const payload: EventFormData = {
@@ -48,7 +48,7 @@ export default function AdminCreateEventPage() {
       capacity: Number.isFinite(form.capacity) ? form.capacity : 0,
     };
 
-    const newEvent = createEvent(payload);
+    const newEvent = await createEvent(payload);
     const fallbackId = getEvents().length;
     const eventForAlert = newEvent ?? { id: fallbackId, ...payload };
 
