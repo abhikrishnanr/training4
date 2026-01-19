@@ -56,25 +56,18 @@ export default function EventsPage() {
 
     async function loadEvents() {
       const allEvents = getEvents();
-      const storedEvents = readStoredEvents();
-      const mergedEvents = [...allEvents, ...storedEvents];
       const featured = getFeaturedEvents();
       const byId = getEventById(3);
       const paginated = await getPaginatedEvents(1, 10);
-      const mergedPaginated = [...paginated, ...storedEvents].slice(0, 10);
 
       if (!isActive) {
         return;
       }
 
-      setEvents(Array.isArray(mergedEvents) ? mergedEvents : []);
-      setFeaturedEvents(
-        Array.isArray(featured) ? [...featured, ...storedEvents] : []
-      );
+      setEvents(Array.isArray(allEvents) ? allEvents : []);
+      setFeaturedEvents(Array.isArray(featured) ? featured : []);
       setEventById(byId);
-      setPaginatedEvents(
-        Array.isArray(mergedPaginated) ? mergedPaginated : []
-      );
+      setPaginatedEvents(Array.isArray(paginated) ? paginated : []);
     }
 
     void loadEvents();
