@@ -28,6 +28,20 @@ const defaultForm: EventFormData = {
   capacity: 100,
 };
 
+const storedEventsKey = "customEvents";
+
+function persistCreatedEvent(event: EventFormData & { id: number }) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const existing = window.localStorage.getItem(storedEventsKey);
+  const parsed = existing ? (JSON.parse(existing) as EventFormData[]) : [];
+  const next = [...parsed, event];
+
+  window.localStorage.setItem(storedEventsKey, JSON.stringify(next));
+}
+
 export default function AdminCreateEventPage() {
   const [form, setForm] = useState<EventFormData>(defaultForm);
 
@@ -51,6 +65,14 @@ export default function AdminCreateEventPage() {
     const newEvent = await createEvent(payload);
     const fallbackId = getEvents().length;
     const eventForAlert = newEvent ?? { id: fallbackId, ...payload };
+
+    persistCreatedEvent({
+      id: eventForAlert.id,
+      title: eventForAlert.title,
+      date: eventForAlert.date,
+      location: eventForAlert.location,
+      capacity: eventForAlert.capacity,
+    });
 
     alert(
       `Event created successfully!\n\n` +

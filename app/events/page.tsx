@@ -23,6 +23,25 @@ const mono = IBM_Plex_Mono({
 
 const rowHeight = 92;
 const visibleCount = 3;
+const storedEventsKey = "customEvents";
+
+function readStoredEvents(): EventType[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  const stored = window.localStorage.getItem(storedEventsKey);
+  if (!stored) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(stored);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
 
 export default function EventsPage() {
   const [events, setEvents] = useState<EventType[]>([]);
