@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { IBM_Plex_Mono, Libre_Baskerville } from "next/font/google";
-import { createEvent } from "@/lib/data";
+import { createEvent, getEvents } from "@/lib/data";
 
 const mono = IBM_Plex_Mono({
   subsets: ["latin"],
@@ -41,20 +41,24 @@ export default function AdminCreateEventPage() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    const newEvent = createEvent({
-      title: form.title,
+    const payload: EventFormData = {
+      title: form.title.trim(),
       date: form.date,
-      location: form.location,
-      capacity: form.capacity,
-    });
+      location: form.location.trim(),
+      capacity: Number.isFinite(form.capacity) ? form.capacity : 0,
+    };
+
+    const newEvent = createEvent(payload);
+    const fallbackId = getEvents().length;
+    const eventForAlert = newEvent ?? { id: fallbackId, ...payload };
 
     alert(
       `Event created successfully!\n\n` +
-        `Title: ${newEvent.title}\n` +
-        `Date: ${newEvent.date}\n` +
-        `Location: ${newEvent.location}\n` +
-        `Capacity: ${newEvent.capacity}\n` +
-        `ID: ${newEvent.id}`
+        `Title: ${eventForAlert.title || "Untitled"}\n` +
+        `Date: ${eventForAlert.date || "TBD"}\n` +
+        `Location: ${eventForAlert.location || "TBD"}\n` +
+        `Capacity: ${Number.isFinite(eventForAlert.capacity) ? eventForAlert.capacity : "TBD"}\n` +
+        `ID: ${eventForAlert.id ?? "TBD"}`
     );
 
     setForm(defaultForm);
