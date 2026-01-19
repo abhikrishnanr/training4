@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Libre_Baskerville, IBM_Plex_Mono } from "next/font/google";
 import {
+  type EventType,
   getEventById,
   getEvents,
   getFeaturedEvents,
@@ -22,30 +23,74 @@ const mono = IBM_Plex_Mono({
 
 const rowHeight = 92;
 const visibleCount = 3;
+const storedEventsKey = "customEvents";
+
+function readStoredEvents(): EventType[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  const stored = window.localStorage.getItem(storedEventsKey);
+  if (!stored) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(stored);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
 
 export default function EventsPage() {
-  const events = getEvents();
-  const paginatedEvents = getPaginatedEvents(1, 10);
-  const featuredEvents = getFeaturedEvents();
-  const eventById = getEventById(3);
-
-  const safeEvents = Array.isArray(events) ? events : [];
-  const safePaginatedEvents = Array.isArray(paginatedEvents)
-    ? paginatedEvents
-    : [];
-  const safeFeaturedEvents = Array.isArray(featuredEvents)
-    ? featuredEvents
-    : [];
+  const [events, setEvents] = useState<EventType[]>([]);
+  const [paginatedEvents, setPaginatedEvents] = useState<EventType[]>([]);
+  const [featuredEvents, setFeaturedEvents] = useState<EventType[]>([]);
+  const [eventById, setEventById] = useState<EventType | undefined>(undefined);
 
   const [startIndex, setStartIndex] = useState(0);
 
-  const maxStartIndex = Math.max(safeEvents.length - visibleCount, 0);
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadEvents() {
+      const allEvents = getEvents();
+      const storedEvents = readStoredEvents();
+      const mergedEvents = [...allEvents, ...storedEvents];
+      const featured = getFeaturedEvents();
+      const byId = getEventById(3);
+      const paginated = await getPaginatedEvents(1, 10);
+      const mergedPaginated = [...paginated, ...storedEvents].slice(0, 10);
+
+      if (!isActive) {
+        return;
+      }
+
+      setEvents(Array.isArray(mergedEvents) ? mergedEvents : []);
+      setFeaturedEvents(
+        Array.isArray(featured) ? [...featured, ...storedEvents] : []
+      );
+      setEventById(byId);
+      setPaginatedEvents(
+        Array.isArray(mergedPaginated) ? mergedPaginated : []
+      );
+    }
+
+    void loadEvents();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  const maxStartIndex = Math.max(events.length - visibleCount, 0);
   const containerHeight = rowHeight * visibleCount;
-  const totalHeight = rowHeight * safeEvents.length;
+  const totalHeight = rowHeight * events.length;
 
   const visibleEvents = useMemo(
-    () => safeEvents.slice(startIndex, startIndex + visibleCount),
-    [safeEvents, startIndex]
+    () => events.slice(startIndex, startIndex + visibleCount),
+    [events, startIndex]
   );
 
   function handleScroll(event: React.UIEvent<HTMLDivElement>) {
@@ -117,7 +162,7 @@ export default function EventsPage() {
         <div>
           <h2 className="text-xl">Paginated events (page 1, size 10)</h2>
           <ul className="mt-4 space-y-2 text-sm text-neutral-700">
-            {safePaginatedEvents.map((event) => (
+            {paginatedEvents.map((event) => (
               <li key={`page-${event.id}`}>
                 {event.title} — {event.location} ({event.date})
               </li>
@@ -128,7 +173,7 @@ export default function EventsPage() {
         <div>
           <h2 className="text-xl">Featured events (even IDs)</h2>
           <ul className="mt-4 space-y-2 text-sm text-neutral-700">
-            {safeFeaturedEvents.map((event) => (
+            {featuredEvents.map((event) => (
               <li key={`featured-${event.id}`}>
                 {event.title} — {event.location} ({event.date})
               </li>
