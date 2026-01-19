@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { IBM_Plex_Mono, Libre_Baskerville } from "next/font/google";
+import { createEvent } from "@/lib/data";
 
 const mono = IBM_Plex_Mono({
   subsets: ["latin"],
@@ -20,13 +21,15 @@ type EventFormData = {
   capacity: number;
 };
 
+const defaultForm: EventFormData = {
+  title: "",
+  date: "",
+  location: "",
+  capacity: 100,
+};
+
 export default function AdminCreateEventPage() {
-  const [form, setForm] = useState<EventFormData>({
-    title: "",
-    date: "",
-    location: "",
-    capacity: 100,
-  });
+  const [form, setForm] = useState<EventFormData>(defaultForm);
 
   function updateField<K extends keyof EventFormData>(
     key: K,
@@ -38,10 +41,23 @@ export default function AdminCreateEventPage() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    // Placeholder: replace with server action / API call later
-    console.log("Creating event:", form);
+    const newEvent = createEvent({
+      title: form.title,
+      date: form.date,
+      location: form.location,
+      capacity: form.capacity,
+    });
 
-    alert("Event created (mock)");
+    alert(
+      `Event created successfully!\n\n` +
+        `Title: ${newEvent.title}\n` +
+        `Date: ${newEvent.date}\n` +
+        `Location: ${newEvent.location}\n` +
+        `Capacity: ${newEvent.capacity}\n` +
+        `ID: ${newEvent.id}`
+    );
+
+    setForm(defaultForm);
   }
 
   return (
@@ -56,10 +72,7 @@ export default function AdminCreateEventPage() {
           </p>
         </header>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6"
-        >
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Title */}
           <div>
             <label
@@ -73,9 +86,7 @@ export default function AdminCreateEventPage() {
               type="text"
               required
               value={form.title}
-              onChange={(e) =>
-                updateField("title", e.target.value)
-              }
+              onChange={(e) => updateField("title", e.target.value)}
               className="w-full rounded border border-neutral-400 bg-transparent px-3 py-2 text-sm focus:border-neutral-900 focus:outline-none"
             />
           </div>
@@ -93,9 +104,7 @@ export default function AdminCreateEventPage() {
               type="date"
               required
               value={form.date}
-              onChange={(e) =>
-                updateField("date", e.target.value)
-              }
+              onChange={(e) => updateField("date", e.target.value)}
               className="w-full rounded border border-neutral-400 bg-transparent px-3 py-2 text-sm focus:border-neutral-900 focus:outline-none"
             />
           </div>
@@ -113,9 +122,7 @@ export default function AdminCreateEventPage() {
               type="text"
               required
               value={form.location}
-              onChange={(e) =>
-                updateField("location", e.target.value)
-              }
+              onChange={(e) => updateField("location", e.target.value)}
               className="w-full rounded border border-neutral-400 bg-transparent px-3 py-2 text-sm focus:border-neutral-900 focus:outline-none"
             />
           </div>
@@ -133,9 +140,7 @@ export default function AdminCreateEventPage() {
               type="number"
               min={1}
               value={form.capacity}
-              onChange={(e) =>
-                updateField("capacity", Number(e.target.value))
-              }
+              onChange={(e) => updateField("capacity", Number(e.target.value))}
               className="w-full rounded border border-neutral-400 bg-transparent px-3 py-2 text-sm focus:border-neutral-900 focus:outline-none"
             />
           </div>
