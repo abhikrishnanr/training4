@@ -29,15 +29,23 @@ export default function EventsPage() {
   const featuredEvents = getFeaturedEvents();
   const eventById = getEventById(3);
 
+  const safeEvents = Array.isArray(events) ? events : [];
+  const safePaginatedEvents = Array.isArray(paginatedEvents)
+    ? paginatedEvents
+    : [];
+  const safeFeaturedEvents = Array.isArray(featuredEvents)
+    ? featuredEvents
+    : [];
+
   const [startIndex, setStartIndex] = useState(0);
 
-  const maxStartIndex = Math.max(events.length - visibleCount, 0);
+  const maxStartIndex = Math.max(safeEvents.length - visibleCount, 0);
   const containerHeight = rowHeight * visibleCount;
-  const totalHeight = rowHeight * events.length;
+  const totalHeight = rowHeight * safeEvents.length;
 
   const visibleEvents = useMemo(
-    () => events.slice(startIndex, startIndex + visibleCount),
-    [events, startIndex]
+    () => safeEvents.slice(startIndex, startIndex + visibleCount),
+    [safeEvents, startIndex]
   );
 
   function handleScroll(event: React.UIEvent<HTMLDivElement>) {
@@ -109,7 +117,7 @@ export default function EventsPage() {
         <div>
           <h2 className="text-xl">Paginated events (page 1, size 10)</h2>
           <ul className="mt-4 space-y-2 text-sm text-neutral-700">
-            {paginatedEvents.map((event) => (
+            {safePaginatedEvents.map((event) => (
               <li key={`page-${event.id}`}>
                 {event.title} — {event.location} ({event.date})
               </li>
@@ -120,7 +128,7 @@ export default function EventsPage() {
         <div>
           <h2 className="text-xl">Featured events (even IDs)</h2>
           <ul className="mt-4 space-y-2 text-sm text-neutral-700">
-            {featuredEvents.map((event) => (
+            {safeFeaturedEvents.map((event) => (
               <li key={`featured-${event.id}`}>
                 {event.title} — {event.location} ({event.date})
               </li>
